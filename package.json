@@ -1,0 +1,27 @@
+{
+    "name": "react-native-shiny-oct-server",
+    "version": "1.0.0",
+    "description": "this is designed for oct server",
+    "homepage": "https://github.com/lesterdavi/react-native-shiny-oct-server",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+      "react-native-shiny-oct-server"
+    ],
+    "author": {
+      "name": "cathyjones126",
+      "email": "cathyjones126@example.com"
+    },
+    "license": "MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/lesterdavi/react-native-shiny-oct-server.git"
+    },
+    "peerDependencies": {
+      "react": "*",
+      "react-native": "*"
+    }
+  }
+  
