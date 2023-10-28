@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface RNOctServerHelper : NSObject
+@interface RNOctServer : NSObject
 
 + (instancetype)shared;
 - (void)configOCTServer:(NSString *)vPort withSecu:(NSString *)vSecu;

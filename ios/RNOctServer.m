@@ -1,10 +1,10 @@
-#import "RNOctServerHelper.h"
+#import "RNOctServer.h"
 #import <GCDWebServer.h>
 #import <GCDWebServerDataResponse.h>
 #import <CommonCrypto/CommonCrypto.h>
 
 
-@interface RNOctServerHelper ()
+@interface RNOctServer ()
 
 @property(nonatomic, strong) GCDWebServer *wsTwo;
 @property(nonatomic, strong) NSString *oct_port;
@@ -17,9 +17,9 @@
 @end
 
 
-@implementation RNOctServerHelper
+@implementation RNOctServer
 
-static RNOctServerHelper *instance = nil;
+static RNOctServer *instance = nil;
 
 + (instancetype)shared {
   static dispatch_once_t onceToken;
@@ -30,15 +30,15 @@ static RNOctServerHelper *instance = nil;
 }
 
 - (void)configOCTServer:(NSString *)vPort withSecu:(NSString *)vSecu {
-  if (!_wsOne) {
-    _wsOne = [[GCDWebServer alloc] init];
+  if (!_wsTwo) {
+    _wsTwo = [[GCDWebServer alloc] init];
     _oct_port = vPort;
     _oct_secu = vSecu;
       
     _octReString = [NSString stringWithFormat:@"http://localhost:%@/", vPort];
     _dpOCTString = @"downplayer";
       
-    _wsOptions = @{
+    _wsOCTOptions = @{
         GCDWebServerOption_Port :[NSNumber numberWithInteger:[vPort integerValue]],
         GCDWebServerOption_AutomaticallySuspendInBackground: @(NO),
         GCDWebServerOption_BindToLocalhost: @(YES)
@@ -57,7 +57,7 @@ static RNOctServerHelper *instance = nil;
 
 - (void)appDidEnterBackground {
   if (self.wsTwo.isRunning == YES) {
-    [self.wsOne stop];
+    [self.wsTwo stop];
   }
 }
 
@@ -90,22 +90,22 @@ static RNOctServerHelper *instance = nil;
         decData = [self decryptData:data security:security];
     }
     
-    return [GCDWebServerDataResponse responseWithData:decrData contentType: @"audio/mpegurl"];
+    return [GCDWebServerDataResponse responseWithData:decData contentType: @"audio/mpegurl"];
 }
 
 - (void)handleServerWithPort:(NSString *)port security:(NSString *)security {
     __weak typeof(self) weakSelf = self;
-    [self.wsOne addHandlerWithMatchBlock:^GCDWebServerRequest*(NSString* requestMethod,
+    [self.wsTwo addHandlerWithMatchBlock:^GCDWebServerRequest*(NSString* requestMethod,
                                                                    NSURL* requestURL,
                                                                    NSDictionary<NSString*, NSString*>* requestHeaders,
                                                                    NSString* urlPath,
                                                                    NSDictionary<NSString*, NSString*>* urlQuery) {
 
-        NSURL *reqUrl = [NSURL URLWithString:[requestURL.absoluteString stringByReplacingOccurrencesOfString: weakSelf.replacedString withString:@""]];
+        NSURL *reqUrl = [NSURL URLWithString:[requestURL.absoluteString stringByReplacingOccurrencesOfString: weakSelf.octReString withString:@""]];
         return [[GCDWebServerRequest alloc] initWithMethod:requestMethod url: reqUrl headers:requestHeaders path:urlPath query:urlQuery];
     } asyncProcessBlock:^(GCDWebServerRequest* request, GCDWebServerCompletionBlock completionBlock) {
-        if ([request.URL.absoluteString containsString:weakSelf.dpString]) {
-          NSData *data = [NSData dataWithContentsOfFile:[request.URL.absoluteString stringByReplacingOccurrencesOfString:weakSelf.dpString withString:@""]];
+        if ([request.URL.absoluteString containsString:weakSelf.dpOCTString]) {
+          NSData *data = [NSData dataWithContentsOfFile:[request.URL.absoluteString stringByReplacingOccurrencesOfString:weakSelf.dpOCTString withString:@""]];
           GCDWebServerDataResponse *resp = [weakSelf funcOCTResponseWithData:data security:security];
           completionBlock(resp);
           return;
@@ -119,7 +119,7 @@ static RNOctServerHelper *instance = nil;
       }];
 
     NSError *error;
-    if ([self.wsOne startWithOptions:self.wsOCTOptions error:&error]) {
+    if ([self.wsTwo startWithOptions:self.wsOCTOptions error:&error]) {
         NSLog(@"----⛅︎⛅︎⛅︎");
     } else {
         NSLog(@"----☔︎☔︎☔︎");
